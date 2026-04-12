@@ -1,0 +1,97 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Dashboard">
+  <div class="page-header">
+    <div>
+      <div class="page-title">DASHBOARD</div>
+      <div class="page-sub" id="clock-sub">Caricamento...</div>
+    </div>
+    <a href="/nuovo" class="btn btn-primary">+ Nuovo capo</a>
+  </div>
+
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat"><div class="stat-label">Capi attivi</div><div class="stat-value" id="s-total">—</div></div>
+    <div class="stat"><div class="stat-label">Costo totale</div><div class="stat-value" id="s-cost">—</div></div>
+    <div class="stat"><div class="stat-label">Valore vendita</div><div class="stat-value" id="s-sell">—</div></div>
+    <div class="stat"><div class="stat-label">Score medio</div><div class="stat-value" id="s-score">—</div></div>
+  </div>
+
+  <!-- Capi a rischio invenduto -->
+  <div class="card">
+    <div class="flex-between" style="margin-bottom:1rem">
+      <div class="mono" style="font-size:11px;font-weight:500;letter-spacing:.04em">CAPI A RISCHIO — Score &lt; 30%</div>
+    </div>
+    <div id="risk-list"><div class="muted mono" style="font-size:11px">Caricamento...</div></div>
+  </div>
+
+  <!-- Ultimi aggiunti -->
+  <div class="card mt-1">
+    <div class="flex-between" style="margin-bottom:1rem">
+      <div class="mono" style="font-size:11px;font-weight:500;letter-spacing:.04em">ULTIMI AGGIUNTI</div>
+      <a href="/inventario" class="btn" style="padding:4px 12px;font-size:10px">Vedi tutti →</a>
+    </div>
+    <div id="recent-list"><div class="muted mono" style="font-size:11px">Caricamento...</div></div>
+  </div>
+</Base>
+
+<script>
+const CAT_LBL = {U:'Uomo',D:'Donna',A:'Accessori',S:'Scarpe',O:'Outerwear'};
+const CAT_B   = {U:'b-u',D:'b-d',A:'b-a',S:'b-s',O:'b-o'};
+
+async function loadDashboard() {
+  try {
+    const res = await fetch('/api/inventory');
+    const { items } = await res.json();
+    const active = items.filter(i => i.Status === 'disponibile');
+
+    document.getElementById('s-total').textContent = active.length;
+    document.getElementById('s-cost').textContent  = '€' + active.reduce((s,i) => s + (i['Costo Acquisto']||0), 0).toFixed(0);
+    document.getElementById('s-sell').textContent  = '€' + active.reduce((s,i) => s + (i['Prezzo Vendita']||0), 0).toFixed(0);
+
+    const scores = active.filter(i => i['Score Predittivo']).map(i => i['Score Predittivo']);
+    document.getElementById('s-score').textContent = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) + '%' : '—';
+
+    // Rischio
+    const risk = active.filter(i => (i['Score Predittivo']||100) < 30).slice(0,5);
+    document.getElementById('risk-list').innerHTML = risk.length
+      ? tableRows(risk)
+      : '<div class="muted mono" style="font-size:11px">Nessun capo a rischio. Ottimo.</div>';
+
+    // Ultimi 5
+    document.getElementById('recent-list').innerHTML = tableRows(active.slice(0, 5));
+
+  } catch(e) {
+    document.getElementById('risk-list').innerHTML = `<div class="accent mono" style="font-size:11px">Errore: ${e.message}</div>`;
+  }
+}
+
+function tableRows(items) {
+  if (!items.length) return '<div class="muted mono" style="font-size:11px">Nessun capo.</div>';
+  return `<table class="data-table">
+    <thead><tr>
+      <th>Cat.</th><th>Brand</th><th>Descrizione</th><th>Prezzo</th><th>Score</th><th>Status</th>
+    </tr></thead>
+    <tbody>${items.map(it => {
+      const cat = it['Categoria'] || '—';
+      const score = it['Score Predittivo'] || 0;
+      const tier = score>=70?'hot':score>=45?'good':score>=25?'med':'slow';
+      return `<tr>
+        <td><span class="badge ${CAT_B[cat]||''}">${CAT_LBL[cat]||cat}</span></td>
+        <td style="font-weight:500">${it['Brand']||'—'}</td>
+        <td class="muted">${it['Descrizione']||'—'}</td>
+        <td class="green mono">€${(it['Prezzo Vendita']||0).toFixed(2)}</td>
+        <td><span class="score-pill sp-${tier}">${score}%</span></td>
+        <td><span class="badge ${it['Status']==='venduto'?'b-sold':'b-avail'}">${it['Status']||'—'}</span></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+// Clock
+setInterval(() => {
+  document.getElementById('clock-sub').textContent = new Date().toLocaleDateString('it-IT', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) + ' ' + new Date().toLocaleTimeString('it-IT');
+}, 1000);
+
+loadDashboard();
+</script>

@@ -1,0 +1,415 @@
+---
+import Base from '../layouts/Base.astro';
+const editId = Astro.url.searchParams.get('edit') || '';
+---
+<Base title="Nuovo capo">
+  <div class="page-header">
+    <div>
+      <div class="page-title" id="page-title">NUOVO CAPO</div>
+      <div class="page-sub">Scheda inventario + prezzo live + score predittivo</div>
+    </div>
+    <a href="/inventario" class="btn">← Inventario</a>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start" id="layout">
+
+    <!-- Colonna sinistra: form -->
+    <div>
+      <div class="card">
+        <div class="mono" style="font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)">Dati capo</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Categoria</label>
+            <select id="f-cat" onchange="calcScore()">
+              <option value="U">Abbigliamento uomo</option>
+              <option value="D">Abbigliamento donna</option>
+              <option value="A">Accessori</option>
+              <option value="S">Scarpe</option>
+              <option value="O">Outerwear</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Brand</label>
+            <input type="text" id="f-brand" placeholder="es. Versace, Levi's...">
+          </div>
+          <div class="form-group" style="grid-column: span 2">
+            <label>Descrizione</label>
+            <input type="text" id="f-desc" placeholder="es. Giacca denim anni '90 con patch">
+          </div>
+          <div class="form-group">
+            <label>Taglia</label>
+            <select id="f-size" onchange="calcScore()">
+              <option value="core">M / L / 42 / 44</option>
+              <option value="xl">XL / 46</option>
+              <option value="small">S / XS / 38 / 40</option>
+              <option value="extreme">XXL+ o 36 e sotto</option>
+              <option value="onesize">One size / accessori</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Condizione</label>
+            <select id="f-cond" onchange="calcScore()">
+              <option value="1">Ottima</option>
+              <option value="2">Buona</option>
+              <option value="3">Discreta</option>
+              <option value="4">Da restauro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Decade / periodo</label>
+            <select id="f-decade" onchange="calcScore()">
+              <option value="90s">Anni '90</option>
+              <option value="y2k">Y2K / anni 2000</option>
+              <option value="80s">Anni '80</option>
+              <option value="70s">Anni '70 o prima</option>
+              <option value="recent">Anni '10 recente</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Brand recognition (mercato napoletano)</label>
+            <select id="f-brand-tier" onchange="calcScore()">
+              <option value="3">Alto — Versace, Armani, Fiorucci</option>
+              <option value="2" selected>Medio — Levi's, Ralph Lauren, Nike</option>
+              <option value="1">Basso — nicchia / no-logo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Stagione corrente vs capo</label>
+            <select id="f-season" onchange="calcScore()">
+              <option value="match">In stagione</option>
+              <option value="soon">Prossima stagione</option>
+              <option value="mismatch">Fuori stagione</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Visibilità digitale</label>
+            <select id="f-digital" onchange="calcScore()">
+              <option value="2">Online + foto curate</option>
+              <option value="1" selected>Solo negozio fisico</option>
+              <option value="0">Negozio, posizione secondaria</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pezzi simili in stock</label>
+            <select id="f-cannibal" onchange="calcScore()">
+              <option value="0">Nessuno</option>
+              <option value="1">1-2 simili</option>
+              <option value="2">3+ simili</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Anno / periodo specifico</label>
+            <input type="text" id="f-year" placeholder="es. 1994, estate '98...">
+          </div>
+          <div class="form-group" style="grid-column:span 2">
+            <label>Note (difetti, dettagli, provenienza)</label>
+            <input type="text" id="f-notes" placeholder="es. zip rotta, odore di vintage, comprato a Londra...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Prezzi -->
+      <div class="card mt-1">
+        <div class="mono" style="font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)">Prezzi</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Costo acquisto (€)</label>
+            <input type="number" id="f-cost" min="0" step="0.5" oninput="calcScore()" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Prezzo vendita finale (€)</label>
+            <input type="number" id="f-price" step="0.5" placeholder="Auto dal suggerito →">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);margin-top:1rem">
+          <div style="padding:10px 14px;border-right:1px solid var(--border)">
+            <div class="mono" style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">Costo acquisto</div>
+            <div class="mono" style="font-size:17px;font-weight:500" id="pp-cost">€ —</div>
+          </div>
+          <div style="padding:10px 14px;border-right:1px solid var(--border)">
+            <div class="mono" style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">Riferimento mercato live</div>
+            <div class="mono accent" style="font-size:17px;font-weight:500" id="pp-market">€ —</div>
+            <div class="mono muted" style="font-size:9px;margin-top:2px" id="pp-market-src">premi "Cerca prezzi"</div>
+          </div>
+          <div style="padding:10px 14px">
+            <div class="mono" style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">Prezzo suggerito</div>
+            <div class="mono green" style="font-size:17px;font-weight:500" id="pp-suggest">€ —</div>
+            <div class="mono muted" style="font-size:9px;margin-top:2px" id="pp-logic"></div>
+          </div>
+        </div>
+
+        <!-- Ricerca prezzi live -->
+        <div style="margin-top:1rem">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <button id="search-btn" onclick="searchPrices()" class="btn btn-primary" style="padding:8px 20px">
+              ▶ CERCA PREZZI LIVE
+            </button>
+            <span class="mono muted" style="font-size:10px" id="search-status">Vinted · Depop · Vestiaire Collective</span>
+          </div>
+          <div style="border:1px solid var(--border);padding:12px;background:#faf8f4;min-height:52px;font-family:var(--font-mono);font-size:11px" id="market-box">
+            <span class="muted">In attesa della ricerca...</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:1rem">
+        <a href="/inventario" class="btn">Annulla</a>
+        <button onclick="saveItem()" class="btn btn-primary" id="save-btn">Salva capo →</button>
+      </div>
+    </div>
+
+    <!-- Colonna destra: score -->
+    <div>
+      <div class="card" style="position:sticky;top:80px">
+        <div class="mono" style="font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)">Score predittivo</div>
+
+        <div style="text-align:center;padding:1rem 0 1.25rem">
+          <div class="mono muted" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Probabilità vendita 30gg</div>
+          <div class="mono" style="font-size:48px;font-weight:500;line-height:1" id="score-big">—</div>
+          <div style="margin-top:8px" id="score-tier-badge"></div>
+          <div class="mono muted" style="font-size:10px;margin-top:6px" id="score-days"></div>
+        </div>
+
+        <div id="factors-list" style="border-top:1px solid var(--border);padding-top:1rem"></div>
+        <div id="insights-list" style="margin-top:.75rem"></div>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  @media (max-width: 860px) {
+    #layout { grid-template-columns: 1fr !important; }
+  }
+</style>
+
+<script define:vars={{ editId }}>
+const MARKUP = {U:2.4,D:2.5,A:2.8,S:2.2,O:2.3};
+let liveMarketPrice = null;
+let liveMarketText = '';
+let scoreData = null;
+
+function getFormVals() {
+  return {
+    cat:       document.getElementById('f-cat').value,
+    brand:     document.getElementById('f-brand').value.trim(),
+    desc:      document.getElementById('f-desc').value.trim(),
+    size:      document.getElementById('f-size').value,
+    cond:      parseInt(document.getElementById('f-cond').value),
+    decade:    document.getElementById('f-decade').value,
+    brandTier: parseInt(document.getElementById('f-brand-tier').value),
+    season:    document.getElementById('f-season').value,
+    digital:   parseInt(document.getElementById('f-digital').value),
+    cannibal:  parseInt(document.getElementById('f-cannibal').value),
+    cost:      parseFloat(document.getElementById('f-cost').value) || 0,
+    year:      document.getElementById('f-year').value.trim(),
+    notes:     document.getElementById('f-notes').value.trim(),
+  };
+}
+
+async function calcScore() {
+  const v = getFormVals();
+  if (v.cost) {
+    document.getElementById('pp-cost').textContent = '€ ' + v.cost.toFixed(2);
+    const byMarkup = v.cost * (MARKUP[v.cat] || 2.4);
+    const ref = liveMarketPrice || 0;
+    const suggested = Math.round(Math.max(byMarkup, ref > 0 ? ref * 0.9 : byMarkup) / 0.5) * 0.5;
+    document.getElementById('pp-suggest').textContent = '€ ' + suggested.toFixed(2);
+    document.getElementById('pp-logic').textContent = 'Markup ' + (MARKUP[v.cat]||2.4) + 'x';
+    if (!document.getElementById('f-price').value)
+      document.getElementById('f-price').placeholder = 'Suggerito: €' + suggested.toFixed(2);
+  }
+
+  try {
+    const res = await fetch('/api/score', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ ...v, marketPrice: liveMarketPrice, daysInShop: 0 }),
+    });
+    scoreData = await res.json();
+    renderScore(scoreData);
+  } catch(e) {
+    console.error('score error', e);
+  }
+}
+
+function renderScore(d) {
+  if (!d) return;
+  const tier = d.tier;
+  const tierLbl = {hot:'Rotazione rapida',good:'Buona probabilità',med:'Vendita lenta',slow:'Rischio invenduto'}[tier];
+  const tierCol = {hot:'b-avail',good:'b-u',med:'b-a',slow:'b-s'}[tier];
+
+  document.getElementById('score-big').textContent = d.score + '%';
+  document.getElementById('score-tier-badge').innerHTML = `<span class="badge ${tierCol}">${tierLbl}</span>`;
+  document.getElementById('score-days').textContent = 'Stima ~' + d.avgDays + ' giorni alla vendita';
+
+  // Fattori
+  document.getElementById('factors-list').innerHTML = (d.factors||[]).map(f => `
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+        <span class="mono muted" style="font-size:9px">${f.name}</span>
+        <span class="mono" style="font-size:9px;font-weight:500">${f.score}%</span>
+      </div>
+      <div style="height:2px;background:var(--border)">
+        <div style="height:2px;background:var(--accent);width:${f.score}%;transition:width .4s"></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Insights
+  const icoMap = {pos:'▲',neg:'▽',neu:'◆'};
+  const colMap = {pos:'#1a5c3a',neg:'var(--accent)',neu:' var(--muted)'};
+  const bgMap  = {pos:'#e8f5ed',neg:'#fde8e8',neu:'#f0ede6'};
+  document.getElementById('insights-list').innerHTML = (d.insights||[]).map(i => `
+    <div style="padding:6px 10px;border-left:2px solid ${colMap[i.type]};background:${bgMap[i.type]};margin-bottom:5px;font-family:var(--font-mono);font-size:10px;line-height:1.6;color:${colMap[i.type]}">
+      ${icoMap[i.type]} ${i.text}
+    </div>
+  `).join('');
+}
+
+async function searchPrices() {
+  const v = getFormVals();
+  if (!v.brand && !v.desc) { alert('Inserisci almeno brand o descrizione.'); return; }
+
+  const btn = document.getElementById('search-btn');
+  const status = document.getElementById('search-status');
+  const box = document.getElementById('market-box');
+
+  btn.disabled = true;
+  btn.textContent = '▶ RICERCA IN CORSO...';
+  status.innerHTML = '<span class="spinner"></span>';
+  box.innerHTML = '<span class="muted">Interrogando Vinted, Depop, Vestiaire Collective...</span>';
+
+  const catMap = {U:'abbigliamento uomo',D:'abbigliamento donna',A:'accessori',S:'scarpe',O:'giacca cappotto'};
+  const condMap = {1:'ottimo stato',2:'buone condizioni',3:'usato',4:'da restauro'};
+
+  try {
+    const res = await fetch('/api/prices', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        brand: v.brand,
+        desc: v.desc,
+        cat: catMap[v.cat],
+        decade: v.decade,
+        cond: condMap[v.cond],
+        cost: v.cost,
+      }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    liveMarketPrice = data.avg || null;
+    liveMarketText  = data.summary || '';
+
+    document.getElementById('pp-market').textContent = data.avg ? '€ ' + data.avg.toFixed(0) : '€ n.d.';
+    document.getElementById('pp-market-src').textContent = 'Confidenza: ' + (data.confidence||'—');
+
+    const confColor = {alta:'var(--green)',media:'var(--accent)',bassa:'var(--muted)'}[data.confidence]||'var(--muted)';
+    const srcRows = (data.sources||[]).map(s =>
+      `<div style="display:flex;gap:12px;padding:3px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--accent);font-size:9px;min-width:70px;text-transform:uppercase">${s.platform}</span>
+        <span style="font-weight:500">€${s.price}</span>
+        <span class="muted" style="font-size:10px">${s.condition}</span>
+      </div>`
+    ).join('');
+
+    box.innerHTML = `
+      <div class="muted" style="font-size:9px;margin-bottom:6px">Aggiornato: ${new Date().toLocaleTimeString('it-IT')} · <span style="color:${confColor}">Confidenza: ${data.confidence||'—'}</span></div>
+      ${srcRows}
+      ${data.avg ? `<div style="margin-top:6px"><strong>Media: €${data.avg}</strong> (min €${data.min||'—'} / max €${data.max||'—'})</div>` : ''}
+      <div class="muted" style="margin-top:4px;font-size:10px">${data.summary||''}</div>
+    `;
+
+    btn.disabled = false;
+    btn.textContent = '▷ AGGIORNA PREZZI';
+    status.textContent = 'Ultimo aggiornamento: ' + new Date().toLocaleTimeString('it-IT');
+    calcScore();
+
+  } catch(e) {
+    box.innerHTML = `<span style="color:var(--accent)">Errore: ${e.message}</span>`;
+    btn.disabled = false;
+    btn.textContent = '▶ RIPROVA';
+    status.textContent = '';
+  }
+}
+
+async function saveItem() {
+  const v = getFormVals();
+  if (!v.brand && !v.desc) { alert('Inserisci almeno brand o descrizione.'); return; }
+
+  let price = parseFloat(document.getElementById('f-price').value);
+  if (!price) {
+    const byMarkup = v.cost * (MARKUP[v.cat] || 2.4);
+    const ref = liveMarketPrice || 0;
+    price = Math.round(Math.max(byMarkup, ref > 0 ? ref * 0.9 : byMarkup) / 0.5) * 0.5;
+  }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Salvataggio...';
+
+  const payload = {
+    cat: v.cat, brand: v.brand, desc: v.desc, size: v.size,
+    cond: v.cond, decade: v.decade, brandTier: v.brandTier,
+    season: v.season, digital: v.digital, cannibal: v.cannibal,
+    cost: v.cost, price, year: v.year, notes: v.notes,
+    marketPrice: liveMarketPrice, marketText: liveMarketText,
+    score: scoreData?.score || 0,
+    status: 'disponibile',
+  };
+
+  const method = editId ? 'PATCH' : 'POST';
+  if (editId) payload.id = editId;
+
+  try {
+    const res = await fetch('/api/inventory', {
+      method,
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('Errore salvataggio');
+    window.location.href = '/inventario';
+  } catch(e) {
+    alert('Errore: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Salva capo →';
+  }
+}
+
+// Carica dati se in modifica
+async function loadEditData() {
+  if (!editId) return;
+  document.getElementById('page-title').textContent = 'MODIFICA CAPO';
+  try {
+    const res = await fetch('/api/inventory');
+    const { items } = await res.json();
+    const it = items.find(i => i.id === editId);
+    if (!it) return;
+    document.getElementById('f-cat').value      = it['Categoria'] || 'U';
+    document.getElementById('f-brand').value    = it['Brand'] || '';
+    document.getElementById('f-desc').value     = it['Descrizione'] || '';
+    document.getElementById('f-size').value     = it['Taglia'] || 'core';
+    document.getElementById('f-cond').value     = it['Condizione'] || 1;
+    document.getElementById('f-decade').value   = it['Decade'] || '90s';
+    document.getElementById('f-brand-tier').value = it['Brand Tier'] || 2;
+    document.getElementById('f-season').value   = it['Stagione'] || 'match';
+    document.getElementById('f-digital').value  = it['Visibilità Digitale'] || 1;
+    document.getElementById('f-cannibal').value = it['Cannibalizzazione'] || 0;
+    document.getElementById('f-cost').value     = it['Costo Acquisto'] || '';
+    document.getElementById('f-price').value    = it['Prezzo Vendita'] || '';
+    document.getElementById('f-year').value     = it['Anno Periodo'] || '';
+    document.getElementById('f-notes').value    = it['Note'] || '';
+    liveMarketPrice = it['Prezzo Mercato Live'] || null;
+    if (liveMarketPrice) {
+      document.getElementById('pp-market').textContent = '€ ' + liveMarketPrice.toFixed(0);
+      document.getElementById('pp-market-src').textContent = 'salvato · aggiorna se vuoi';
+    }
+    calcScore();
+  } catch(e) { console.error(e); }
+}
+
+loadEditData();
+calcScore();
+</script>

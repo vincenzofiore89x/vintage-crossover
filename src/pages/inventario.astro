@@ -1,0 +1,164 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Inventario">
+  <div class="page-header">
+    <div>
+      <div class="page-title">INVENTARIO</div>
+      <div class="page-sub">Tutti i capi · filtra e cerca</div>
+    </div>
+    <div class="flex gap-8">
+      <button class="btn" onclick="printAllTags()">Stampa cartellini</button>
+      <a href="/nuovo" class="btn btn-primary">+ Nuovo capo</a>
+    </div>
+  </div>
+
+  <!-- Filtri -->
+  <div class="flex gap-8" style="margin-bottom:1rem;flex-wrap:wrap">
+    <select id="fc" onchange="load()" class="mono" style="font-size:11px;padding:6px 10px;border:1px solid var(--border);background:var(--paper);border-radius:0">
+      <option value="">Tutte le categorie</option>
+      <option value="U">Uomo</option><option value="D">Donna</option>
+      <option value="A">Accessori</option><option value="S">Scarpe</option><option value="O">Outerwear</option>
+    </select>
+    <select id="fs" onchange="load()" class="mono" style="font-size:11px;padding:6px 10px;border:1px solid var(--border);background:var(--paper);border-radius:0">
+      <option value="">Tutti gli status</option>
+      <option value="disponibile">Disponibile</option>
+      <option value="venduto">Venduto</option>
+    </select>
+    <input type="text" id="fq" placeholder="Cerca brand / descrizione..." oninput="filterLocal()"
+      class="mono" style="font-size:11px;padding:6px 10px;border:1px solid var(--border);background:var(--paper);flex:1;min-width:160px">
+  </div>
+
+  <!-- Tabella -->
+  <div style="overflow:auto;border:1px solid var(--border)">
+    <table class="data-table" id="inv-table">
+      <thead>
+        <tr>
+          <th style="width:28px">#</th>
+          <th style="width:72px">Cat.</th>
+          <th style="width:120px">Brand</th>
+          <th>Descrizione</th>
+          <th style="width:56px">Taglia</th>
+          <th style="width:68px">Costo</th>
+          <th style="width:76px">Prezzo</th>
+          <th style="width:72px">Mkt live</th>
+          <th style="width:68px">Score</th>
+          <th style="width:60px">Status</th>
+          <th style="width:100px"></th>
+        </tr>
+      </thead>
+      <tbody id="tbl-body">
+        <tr><td colspan="11" class="muted mono" style="text-align:center;padding:2rem;font-size:11px">Caricamento...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="tbl-empty" style="display:none;text-align:center;padding:3rem;font-family:var(--font-mono);font-size:11px;color:var(--muted);border:1px dashed var(--border);border-top:none">
+    Nessun capo trovato.
+  </div>
+</Base>
+
+<script>
+const CAT_LBL = {U:'Uomo',D:'Donna',A:'Accessori',S:'Scarpe',O:'Outerwear'};
+const CAT_B   = {U:'b-u',D:'b-d',A:'b-a',S:'b-s',O:'b-o'};
+let allItems = [];
+
+async function load() {
+  const cat = document.getElementById('fc').value;
+  const status = document.getElementById('fs').value;
+  let formula = '';
+  const parts = [];
+  if (cat)    parts.push(`{Categoria}="${cat}"`);
+  if (status) parts.push(`{Status}="${status}"`);
+  if (parts.length) formula = parts.length > 1 ? `AND(${parts.join(',')})` : parts[0];
+
+  const url = '/api/inventory' + (formula ? `?filterByFormula=${encodeURIComponent(formula)}` : '');
+  try {
+    const res = await fetch(url);
+    const { items } = await res.json();
+    allItems = items;
+    filterLocal();
+  } catch(e) {
+    document.getElementById('tbl-body').innerHTML = `<tr><td colspan="11" class="accent mono" style="padding:1rem;font-size:11px">Errore: ${e.message}</td></tr>`;
+  }
+}
+
+function filterLocal() {
+  const q = document.getElementById('fq').value.toLowerCase();
+  const filtered = q ? allItems.filter(i =>
+    (i['Brand']||'').toLowerCase().includes(q) ||
+    (i['Descrizione']||'').toLowerCase().includes(q)
+  ) : allItems;
+  renderTable(filtered);
+}
+
+function renderTable(items) {
+  const body = document.getElementById('tbl-body');
+  const empty = document.getElementById('tbl-empty');
+  if (!items.length) {
+    body.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  body.innerHTML = items.map((it, idx) => {
+    const cat = it['Categoria'] || '—';
+    const score = it['Score Predittivo'] || 0;
+    const tier = score>=70?'hot':score>=45?'good':score>=25?'med':'slow';
+    const mkt = it['Prezzo Mercato Live'] ? '€'+Number(it['Prezzo Mercato Live']).toFixed(0) : '—';
+    return `<tr>
+      <td class="muted">${idx+1}</td>
+      <td><span class="badge ${CAT_B[cat]||''}">${CAT_LBL[cat]||cat}</span></td>
+      <td style="font-weight:500">${it['Brand']||'—'}</td>
+      <td class="muted">${it['Descrizione']||'—'}</td>
+      <td class="mono">${it['Taglia']||'—'}</td>
+      <td class="mono">€${(it['Costo Acquisto']||0).toFixed(0)}</td>
+      <td class="mono green" style="font-weight:500">€${(it['Prezzo Vendita']||0).toFixed(2)}</td>
+      <td class="mono accent">${mkt}</td>
+      <td><span class="score-pill sp-${tier}">${score}%</span></td>
+      <td><span class="badge ${it['Status']==='venduto'?'b-sold':'b-avail'}">${it['Status']==='venduto'?'VEND.':'DISP.'}</span></td>
+      <td class="flex gap-8" style="flex-wrap:nowrap">
+        <a href="/capo/${it.id}" class="btn" style="padding:3px 8px;font-size:10px">→</a>
+        <button onclick="toggleSold('${it.id}','${it['Status']}')" class="btn" style="padding:3px 8px;font-size:10px">${it['Status']==='venduto'?'↩':'✓'}</button>
+        <button onclick="del('${it.id}')" class="btn btn-danger" style="padding:3px 8px;font-size:10px">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function toggleSold(id, current) {
+  const newStatus = current === 'venduto' ? 'disponibile' : 'venduto';
+  await fetch('/api/inventory', {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id, status: newStatus }),
+  });
+  load();
+}
+
+async function del(id) {
+  if (!confirm('Eliminare questo capo?')) return;
+  await fetch('/api/inventory?id=' + id, { method: 'DELETE' });
+  load();
+}
+
+function printAllTags() {
+  const available = allItems.filter(i => i['Status'] === 'disponibile');
+  if (!available.length) { alert('Nessun capo disponibile.'); return; }
+  const w = window.open('', '_blank', 'width=900,height=700');
+  const tags = available.map(it => `
+    <div style="border:1.5px solid #333;padding:14px;width:170px;display:inline-block;vertical-align:top;margin:5px;font-family:monospace;font-size:11px;page-break-inside:avoid">
+      <div style="font-size:18px;font-weight:700;margin-bottom:3px">${it['Brand']||'—'}</div>
+      <div style="font-size:10px;color:#666;margin-bottom:8px">${it['Descrizione']||''}</div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Cat.</span><span>${CAT_LBL[it['Categoria']]||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Taglia</span><span>${it['Taglia']||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Condizione</span><span>${['','Ottima','Buona','Discreta','Restauro'][it['Condizione']]||'—'}</span></div>
+      <div style="font-size:26px;font-weight:700;color:#2d6a4f;margin:10px 0 4px">€${(it['Prezzo Vendita']||0).toFixed(2)}</div>
+      <div style="font-size:8px;color:#999;border-top:1px solid #ddd;padding-top:5px;margin-top:5px">VINTAGE CROSSOVER · VOMERO, NAPOLI<br>${it.id}</div>
+    </div>
+  `).join('');
+  w.document.write(`<html><body style="padding:10px;background:#fff">${tags}</body></html>`);
+  w.document.close(); w.print();
+}
+
+load();
+</script>

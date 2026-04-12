@@ -1,0 +1,311 @@
+---
+const { title = 'Vintage Crossover CRM' } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} — Vintage Crossover</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a1a18;
+      --paper: #f5f3ee;
+      --muted: #8a8880;
+      --accent: #c8401a;
+      --green: #2d6a4f;
+      --border: #d4d0c8;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-sans: 'IBM Plex Sans', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-weight: 300;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; }
+
+    /* Nav */
+    .site-nav {
+      border-bottom: 2px solid var(--ink);
+      padding: 0 2rem;
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: var(--paper);
+      z-index: 100;
+    }
+    .nav-brand {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .06em;
+      padding: 1rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nav-brand span {
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 10px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 0;
+    }
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: .04em;
+      padding: 0 1.25rem;
+      display: flex;
+      align-items: center;
+      border-left: 1px solid var(--border);
+      color: var(--muted);
+      transition: color .15s, background .15s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--ink);
+      background: #ede9e0;
+    }
+
+    /* Main */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Page header */
+    .page-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .page-title {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: .04em;
+    }
+    .page-sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* Cards / sections */
+    .card {
+      border: 1px solid var(--border);
+      padding: 1.25rem;
+      background: #faf8f4;
+    }
+    .card + .card { margin-top: 1rem; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      padding: 12px 16px;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    /* Buttons */
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 8px 18px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--ink);
+      letter-spacing: .04em;
+      transition: background .15s;
+    }
+    .btn:hover { background: #ede9e0; }
+    .btn-primary {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+    .btn-primary:hover { background: #333; }
+    .btn-danger { color: var(--accent); border-color: var(--accent); }
+    .btn-danger:hover { background: #fde8e8; }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-group label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 0;
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus { border-color: var(--ink); }
+
+    /* Table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .data-table th {
+      text-align: left;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 500;
+    }
+    .data-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .data-table tr:hover td { background: #f0ede6; }
+
+    /* Badges */
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 2px 7px;
+      letter-spacing: .04em;
+      display: inline-block;
+    }
+    .b-u { background: #e8edf5; color: #1a3a6b; }
+    .b-d { background: #f5e8ee; color: #6b1a3a; }
+    .b-a { background: #f5f0e0; color: #6b4e1a; }
+    .b-s { background: #fde8e8; color: #6b1a1a; }
+    .b-o { background: #e8f5ed; color: #1a5c3a; }
+    .b-avail { background: #e8f5ed; color: #1a5c3a; }
+    .b-sold  { background: #ede8e8; color: #5c3a3a; }
+
+    .score-pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 8px;
+      display: inline-block;
+      min-width: 44px;
+      text-align: center;
+    }
+    .sp-hot  { background: #e8f5ed; color: #1a5c3a; }
+    .sp-good { background: #e8edf5; color: #1a3a6b; }
+    .sp-med  { background: #f5f0e0; color: #6b4e1a; }
+    .sp-slow { background: #fde8e8; color: #6b1a1a; }
+
+    /* Utilities */
+    .mono { font-family: var(--font-mono); }
+    .muted { color: var(--muted); }
+    .accent { color: var(--accent); }
+    .green { color: var(--green); }
+    .text-right { text-align: right; }
+    .flex { display: flex; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .gap-8 { gap: 8px; }
+    .mt-1 { margin-top: 1rem; }
+    .mt-2 { margin-top: 1.5rem; }
+    .spinner {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border: 1.5px solid rgba(0,0,0,.2);
+      border-top-color: var(--ink);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 640px) {
+      .main { padding: 1rem; }
+      .stats-bar { grid-template-columns: repeat(2,1fr); }
+      .stat:nth-child(2) { border-right: none; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .site-nav { padding: 0 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-brand">
+      VINTAGE CROSSOVER
+      <span>Vomero, Napoli</span>
+    </div>
+    <div class="nav-links">
+      <a href="/" id="nav-home">[ HOME ]</a>
+      <a href="/inventario" id="nav-inv">[ INVENTARIO ]</a>
+      <a href="/nuovo" id="nav-new">[ + NUOVO ]</a>
+    </div>
+  </nav>
+  <main class="main">
+    <slot />
+  </main>
+  <script>
+    // Evidenzia link attivo
+    const path = window.location.pathname;
+    document.querySelectorAll('.nav-links a').forEach(a => {
+      if (a.getAttribute('href') === path || (path.startsWith('/capo') && a.getAttribute('href') === '/inventario')) {
+        a.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>

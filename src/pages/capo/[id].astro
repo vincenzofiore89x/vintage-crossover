@@ -1,0 +1,176 @@
+---
+import Base from '../../layouts/Base.astro';
+const { id } = Astro.params;
+---
+<Base title="Capo">
+  <div class="page-header">
+    <div>
+      <div class="page-title" id="capo-title">CAPO —</div>
+      <div class="page-sub mono" id="capo-sub">Caricamento...</div>
+    </div>
+    <div class="flex gap-8">
+      <a href="/inventario" class="btn">← Inventario</a>
+      <button class="btn" onclick="showTag()">Cartellino</button>
+      <button class="btn btn-primary" id="edit-btn">Modifica →</button>
+    </div>
+  </div>
+
+  <div id="capo-content" style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem">
+    <div class="card"><div class="muted mono" style="font-size:11px">Caricamento...</div></div>
+    <div class="card"></div>
+  </div>
+
+  <!-- Modal cartellino -->
+  <div id="tag-modal" style="display:none;position:fixed;inset:0;background:rgba(26,26,24,.6);display:none;align-items:center;justify-content:center;z-index:200" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:var(--paper);border:1px solid var(--ink);padding:1.5rem;width:300px;max-width:95vw">
+      <div class="mono" style="font-size:12px;font-weight:500;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)">CARTELLINO</div>
+      <div id="tag-preview" style="border:1.5px solid var(--ink);padding:14px;margin-bottom:1rem;font-family:var(--font-mono);font-size:12px"></div>
+      <div class="flex gap-8" style="justify-content:flex-end">
+        <button class="btn" onclick="document.getElementById('tag-modal').style.display='none'">Chiudi</button>
+        <button class="btn btn-primary" onclick="printTag()">Stampa</button>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  @media(max-width:700px){#capo-content{grid-template-columns:1fr!important}}
+</style>
+
+<script define:vars={{ id }}>
+const CAT_LBL  = {U:'Uomo',D:'Donna',A:'Accessori',S:'Scarpe',O:'Outerwear'};
+const CAT_B    = {U:'b-u',D:'b-d',A:'b-a',S:'b-s',O:'b-o'};
+const COND_LBL = ['','Ottima','Buona','Discreta','Da restauro'];
+const DECADE_LBL = {y2k:'Y2K / 2000s','90s':"Anni '90",'80s':"Anni '80",'70s':"Anni '70",recent:'Anni 2010'};
+
+let item = null;
+
+async function load() {
+  try {
+    const res = await fetch('/api/inventory');
+    const { items } = await res.json();
+    item = items.find(i => i.id === id);
+    if (!item) { document.getElementById('capo-content').innerHTML = '<div class="card accent mono" style="font-size:11px">Capo non trovato.</div>'; return; }
+    render(item);
+  } catch(e) {
+    document.getElementById('capo-content').innerHTML = `<div class="card accent mono" style="font-size:11px">Errore: ${e.message}</div>`;
+  }
+}
+
+function render(it) {
+  const cat = it['Categoria'] || '—';
+  const score = it['Score Predittivo'] || 0;
+  const tier = score>=70?'hot':score>=45?'good':score>=25?'med':'slow';
+  const tierLbl = {hot:'Rotazione rapida',good:'Buona probabilità',med:'Vendita lenta',slow:'Rischio invenduto'}[tier];
+
+  document.getElementById('capo-title').textContent = it['Brand'] || 'Capo senza brand';
+  document.getElementById('capo-sub').textContent = (it['Descrizione']||'') + ' · ' + (it['Data']||'');
+  document.getElementById('edit-btn').onclick = () => window.location.href = '/nuovo?edit=' + id;
+
+  document.getElementById('capo-content').innerHTML = `
+    <div>
+      <div class="card">
+        <div class="mono muted" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)">Dati capo</div>
+        <table style="width:100%;font-family:var(--font-mono);font-size:12px;border-collapse:collapse">
+          ${row('Categoria', `<span class="badge ${CAT_B[cat]||''}">${CAT_LBL[cat]||cat}</span>`)}
+          ${row('Brand', `<strong>${it['Brand']||'—'}</strong>`)}
+          ${row('Descrizione', it['Descrizione']||'—')}
+          ${row('Taglia', it['Taglia']||'—')}
+          ${row('Condizione', COND_LBL[it['Condizione']]||'—')}
+          ${row('Decade', DECADE_LBL[it['Decade']]||it['Decade']||'—')}
+          ${row('Anno / periodo', it['Anno Periodo']||'—')}
+          ${row('Note', it['Note']||'—')}
+          ${row('Data inserimento', it['Data']||'—')}
+        </table>
+      </div>
+      <div class="card mt-1">
+        <div class="mono muted" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)">Prezzi</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border)">
+          <div style="padding:10px 14px;border-right:1px solid var(--border)">
+            <div class="mono muted" style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Costo</div>
+            <div class="mono" style="font-size:17px;font-weight:500">€${(it['Costo Acquisto']||0).toFixed(2)}</div>
+          </div>
+          <div style="padding:10px 14px;border-right:1px solid var(--border)">
+            <div class="mono muted" style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Mercato live</div>
+            <div class="mono accent" style="font-size:17px;font-weight:500">${it['Prezzo Mercato Live']?'€'+Number(it['Prezzo Mercato Live']).toFixed(0):'—'}</div>
+          </div>
+          <div style="padding:10px 14px">
+            <div class="mono muted" style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Prezzo vendita</div>
+            <div class="mono green" style="font-size:17px;font-weight:500">€${(it['Prezzo Vendita']||0).toFixed(2)}</div>
+          </div>
+        </div>
+        ${it['Note Mercato']?`<div class="mono muted" style="font-size:10px;margin-top:8px">${it['Note Mercato']}</div>`:''}
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:space-between;align-items:center">
+          <span class="badge ${it['Status']==='venduto'?'b-sold':'b-avail'}" style="font-size:11px;padding:4px 12px">${it['Status']?.toUpperCase()||'—'}</span>
+          <button class="btn" onclick="toggleSold()">${it['Status']==='venduto'?'↩ Segna disponibile':'✓ Segna venduto'}</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="position:sticky;top:80px">
+        <div class="mono muted" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)">Score predittivo</div>
+        <div style="text-align:center;padding:.75rem 0 1rem">
+          <div class="mono" style="font-size:52px;font-weight:500;line-height:1">${score}%</div>
+          <div style="margin-top:8px"><span class="score-pill sp-${tier}">${tierLbl}</span></div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:1rem">
+          ${row('Margine atteso', it['Costo Acquisto']?'€'+(it['Prezzo Vendita']-it['Costo Acquisto']).toFixed(2)+' ('+Math.round(((it['Prezzo Vendita']-it['Costo Acquisto'])/it['Costo Acquisto'])*100)+'%)':'—')}
+          ${row('Brand tier', ['','Basso','Medio','Alto'][it['Brand Tier']]||'—')}
+          ${row('Stagione', {match:'In stagione',soon:'Prossima stagione',mismatch:'Fuori stagione'}[it['Stagione']]||'—')}
+          ${row('Visibilità', ['Pos. secondaria','Solo negozio','Online + foto'][it['Visibilità Digitale']]||'—')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function row(label, value) {
+  return `<tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:7px 0;color:var(--muted);font-size:10px;width:140px">${label}</td>
+    <td style="padding:7px 0;font-size:11px">${value}</td>
+  </tr>`;
+}
+
+function showTag() {
+  if (!item) return;
+  const COND_LBL_L = ['','Ottima','Buona','Discreta','Da restauro'];
+  document.getElementById('tag-preview').innerHTML = `
+    <div style="font-size:20px;font-weight:700;margin-bottom:3px">${item['Brand']||'—'}</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:10px">${item['Descrizione']||''} ${item['Anno Periodo']?'· '+item['Anno Periodo']:''}</div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Categoria</span><span>${CAT_LBL[item['Categoria']]||'—'}</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Taglia</span><span>${item['Taglia']||'—'}</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Condizione</span><span>${COND_LBL_L[item['Condizione']]||'—'}</span></div>
+    <div style="font-size:28px;font-weight:700;color:var(--green);margin:10px 0 4px">€${(item['Prezzo Vendita']||0).toFixed(2)}</div>
+    <div style="font-size:8px;color:var(--muted);border-top:1px solid var(--border);padding-top:6px;margin-top:6px">VINTAGE CROSSOVER · VOMERO, NAPOLI · ${id}</div>
+  `;
+  document.getElementById('tag-modal').style.display = 'flex';
+}
+
+function printTag() {
+  if (!item) return;
+  const w = window.open('','_blank','width=360,height=480');
+  w.document.write(`<html><body style="font-family:monospace;padding:20px;max-width:260px">
+    <h2 style="font-size:20px;margin:0 0 4px">${item['Brand']||'—'}</h2>
+    <p style="font-size:10px;color:#666;margin:0 0 10px">${item['Descrizione']||''}</p>
+    <p style="font-size:10px;margin:2px 0"><b>Taglia:</b> ${item['Taglia']||'—'}</p>
+    <p style="font-size:10px;margin:2px 0"><b>Condizione:</b> ${['','Ottima','Buona','Discreta','Da restauro'][item['Condizione']]||'—'}</p>
+    <p style="font-size:28px;font-weight:bold;color:#2d6a4f;margin:12px 0 4px">€${(item['Prezzo Vendita']||0).toFixed(2)}</p>
+    <hr><p style="font-size:8px;color:#999">VINTAGE CROSSOVER · VOMERO, NAPOLI · ${id}</p>
+  </body></html>`);
+  w.document.close(); w.print();
+}
+
+async function toggleSold() {
+  if (!item) return;
+  const newStatus = item['Status'] === 'venduto' ? 'disponibile' : 'venduto';
+  await fetch('/api/inventory', {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id, status: newStatus }),
+  });
+  load();
+}
+
+load();
+</script>
