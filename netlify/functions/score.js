@@ -40,7 +40,7 @@ exports.handler = async (event) => {
     const tier = score >= 70 ? 'hot' : score >= 45 ? 'good' : score >= 25 ? 'med' : 'slow';
     const insights = [];
     if (v.season === 'mismatch') insights.push({ type: 'neg', text: 'Fuori stagione: considera di mettere in storage.' });
-    if (v.digital === 0 || v.digital === 1) insights.push({ type: 'neu', text: 'Online con foto curate può aumentare la probabilità del 15-20%.' });
+    if (v.digital === 0 || v.digital === 1) insights.push({ type: 'neu', text: 'Online con foto curate pu� aumentare la probabilit� del 15-20%.' });
     if (v.cannibal === 2) insights.push({ type: 'neg', text: '3+ pezzi simili in stock: rischio cannibalizzazione.' });
     if (v.brandTier === 3 && v.decade === '90s') insights.push({ type: 'pos', text: "Brand alto + anni '90: ideale per il mercato napoletano." });
     if (v.size === 'extreme') insights.push({ type: 'neg', text: 'Taglia estrema: usa Vinted/Depop come canale primario.' });
@@ -53,9 +53,9 @@ exports.handler = async (event) => {
       { name: 'Decade / trend', score: Math.round(((W.decade[v.decade] || 0) / 18) * 100), max: 18 },
       { name: 'Condizione', score: Math.round(((W.cond[v.cond] || 0) / 16) * 100), max: 16 },
       { name: 'Taglia', score: Math.round(((W.size[v.size] || 0) / 14) * 100), max: 14 },
-      { name: 'Stagionalità', score: Math.round(((W.season[v.season] || 0) / 10) * 100), max: 10 },
+      { name: 'Stagionalit�', score: Math.round(((W.season[v.season] || 0) / 10) * 100), max: 10 },
       { name: 'Prezzo vs mercato', score: Math.round(((W.price[priceFactor] || 0) / 10) * 100), max: 10 },
-      { name: 'Visibilità digitale', score: Math.round(((W.digital[v.digital] || 0) / 8) * 100), max: 8 },
+      { name: 'Visibilit� digitale', score: Math.round(((W.digital[v.digital] || 0) / 8) * 100), max: 8 },
     ];
     return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ score, decayed, tier, avgDays, insights, factors, suggested, priceFactor }) };
   } catch (err) {
