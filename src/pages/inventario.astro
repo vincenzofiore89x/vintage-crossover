@@ -5,7 +5,7 @@ import Base from '../layouts/Base.astro';
   <div class="page-header">
     <div>
       <div class="page-title">INVENTARIO</div>
-      <div class="page-sub">Tutti i capi Â· filtra e cerca</div>
+      <div class="page-sub">Tutti i capi · filtra e cerca</div>
     </div>
     <div class="flex gap-8">
       <button class="btn" onclick="printAllTags()">Stampa cartellini</button>
@@ -101,25 +101,25 @@ function renderTable(items) {
   }
   empty.style.display = 'none';
   body.innerHTML = items.map((it, idx) => {
-    const cat = it['Categoria'] || 'â';
+    const cat = it['Categoria'] || '—';
     const score = it['Score Predittivo'] || 0;
     const tier = score>=70?'hot':score>=45?'good':score>=25?'med':'slow';
-    const mkt = it['Prezzo Mercato Live'] ? 'â¬'+Number(it['Prezzo Mercato Live']).toFixed(0) : 'â';
+    const mkt = it['Prezzo Mercato Live'] ? '€'+Number(it['Prezzo Mercato Live']).toFixed(0) : '—';
     return `<tr>
       <td class="muted">${idx+1}</td>
       <td><span class="badge ${CAT_B[cat]||''}">${CAT_LBL[cat]||cat}</span></td>
-      <td style="font-weight:500">${it['Brand']||'â'}</td>
-      <td class="muted">${it['Descrizione']||'â'}</td>
-      <td class="mono">${it['Taglia']||'â'}</td>
-      <td class="mono">â¬${(it['Costo Acquisto']||0).toFixed(0)}</td>
-      <td class="mono green" style="font-weight:500">â¬${(it['Prezzo Vendita']||0).toFixed(2)}</td>
+      <td style="font-weight:500">${it['Brand']||'—'}</td>
+      <td class="muted">${it['Descrizione']||'—'}</td>
+      <td class="mono">${it['Taglia']||'—'}</td>
+      <td class="mono">€${(it['Costo Acquisto']||0).toFixed(0)}</td>
+      <td class="mono green" style="font-weight:500">€${(it['Prezzo Vendita']||0).toFixed(2)}</td>
       <td class="mono accent">${mkt}</td>
       <td><span class="score-pill sp-${tier}">${score}%</span></td>
       <td><span class="badge ${it['Status']==='venduto'?'b-sold':'b-avail'}">${it['Status']==='venduto'?'VEND.':'DISP.'}</span></td>
       <td class="flex gap-8" style="flex-wrap:nowrap">
-        <a href="/capo/${it.id}" class="btn" style="padding:3px 8px;font-size:10px">â</a>
-        <button onclick="toggleSold('${it.id}','${it['Status']}')" class="btn" style="padding:3px 8px;font-size:10px">${it['Status']==='venduto'?'â©':'â'}</button>
-        <button onclick="del('${it.id}')" class="btn btn-danger" style="padding:3px 8px;font-size:10px">â</button>
+        <a href="/capo/${it.id}" class="btn" style="padding:3px 8px;font-size:10px">→</a>
+        <button onclick="toggleSold('${it.id}','${it['Status']}')" class="btn" style="padding:3px 8px;font-size:10px">${it['Status']==='venduto'?'↩':'✓'}</button>
+        <button onclick="del('${it.id}')" class="btn btn-danger" style="padding:3px 8px;font-size:10px">✕</button>
       </td>
     </tr>`;
   }).join('');
@@ -147,13 +147,13 @@ function printAllTags() {
   const w = window.open('', '_blank', 'width=900,height=700');
   const tags = available.map(it => `
     <div style="border:1.5px solid #333;padding:14px;width:170px;display:inline-block;vertical-align:top;margin:5px;font-family:monospace;font-size:11px;page-break-inside:avoid">
-      <div style="font-size:18px;font-weight:700;margin-bottom:3px">${it['Brand']||'â'}</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:3px">${it['Brand']||'—'}</div>
       <div style="font-size:10px;color:#666;margin-bottom:8px">${it['Descrizione']||''}</div>
-      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Cat.</span><span>${CAT_LBL[it['Categoria']]||'â'}</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Taglia</span><span>${it['Taglia']||'â'}</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Condizione</span><span>${['','Ottima','Buona','Discreta','Restauro'][it['Condizione']]||'â'}</span></div>
-      <div style="font-size:26px;font-weight:700;color:#2d6a4f;margin:10px 0 4px">â¬${(it['Prezzo Vendita']||0).toFixed(2)}</div>
-      <div style="font-size:8px;color:#999;border-top:1px solid #ddd;padding-top:5px;margin-top:5px">VINTAGE CROSSOVER Â· VOMERO, NAPOLI<br>${it.id}</div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Cat.</span><span>${CAT_LBL[it['Categoria']]||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Taglia</span><span>${it['Taglia']||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>Condizione</span><span>${['','Ottima','Buona','Discreta','Restauro'][it['Condizione']]||'—'}</span></div>
+      <div style="font-size:26px;font-weight:700;color:#2d6a4f;margin:10px 0 4px">€${(it['Prezzo Vendita']||0).toFixed(2)}</div>
+      <div style="font-size:8px;color:#999;border-top:1px solid #ddd;padding-top:5px;margin-top:5px">VINTAGE CROSSOVER · VOMERO, NAPOLI<br>${it.id}</div>
     </div>
   `).join('');
   w.document.write(`<html><body style="padding:10px;background:#fff">${tags}</body></html>`);
