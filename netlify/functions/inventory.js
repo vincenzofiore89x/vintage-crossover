@@ -47,7 +47,7 @@ exports.handler = async (event) => {
       const body = JSON.parse(event.body);
       const { id, ...fields } = body;
       if (!id) throw new Error('ID mancante');
-      const res = await fetch(`${BASE_URL}/${id}`, { method: 'PATCH', headers, body: JSON.stringify({ fields: sanitizeFields(fields) }) });
+      const res = await fetch(`${BASE_URL}/${id}`, { method: 'PATCH', headers, body: JSON.stringify({ typecast: true, fields: sanitizeFields(fields) }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error?.message || 'Airtable error');
       return { statusCode: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify({ id: data.id, ...data.fields }) };
@@ -68,7 +68,7 @@ exports.handler = async (event) => {
 };
 
 function sanitizeFields(f) {
-  const map = { cat: 'Categoria', brand: 'Brand', desc: 'Descrizione', size: 'Taglia', cond: 'Condizione', decade: 'Decade', brandTier: 'Brand Tier', season: 'Stagione', digital: 'Visibilità Digitale', cannibal: 'Cannibalizzazione', cost: 'Costo Acquisto', price: 'Prezzo Vendita', marketPrice: 'Prezzo Mercato Live', marketText: 'Note Mercato', score: 'Score Predittivo', year: 'Anno Periodo', notes: 'Note', status: 'Status' };
+  const map = { cat: 'Categoria', brand: 'Brand', desc: 'Descrizione', size: 'Taglia', cond: 'Condizione', decade: 'Decade', brandTier: 'Brand Tier', season: 'Stagione', digital: 'VisibilitÃ  Digitale', cannibal: 'Cannibalizzazione', cost: 'Costo Acquisto', price: 'Prezzo Vendita', marketPrice: 'Prezzo Mercato Live', marketText: 'Note Mercato', score: 'Score Predittivo', year: 'Anno Periodo', notes: 'Note', status: 'Status' };
   const out = {};
   for (const [k, v] of Object.entries(f)) { if (map[k] && v !== undefined && v !== null && v !== '') out[map[k]] = v; }
   if (!f.id) out['Data'] = new Date().toISOString().split('T')[0];
