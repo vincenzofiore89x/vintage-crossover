@@ -8,7 +8,7 @@ const editId = Astro.url.searchParams.get('edit') || '';
       <div class="page-title" id="page-title">NUOVO CAPO</div>
       <div class="page-sub">Scheda inventario + prezzo live + score predittivo</div>
     </div>
-    <a href="/inventario" class="btn">← Inventario</a>
+    <a href="/inventario" class="btn">â Inventario</a>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start" id="layout">
@@ -68,9 +68,9 @@ const editId = Astro.url.searchParams.get('edit') || '';
           <div class="form-group">
             <label>Brand recognition (mercato napoletano)</label>
             <select id="f-brand-tier" onchange="calcScore()">
-              <option value="3">Alto — Versace, Armani, Fiorucci</option>
-              <option value="2" selected>Medio — Levi's, Ralph Lauren, Nike</option>
-              <option value="1">Basso — nicchia / no-logo</option>
+              <option value="3">Alto â Versace, Armani, Fiorucci</option>
+              <option value="2" selected>Medio â Levi's, Ralph Lauren, Nike</option>
+              <option value="1">Basso â nicchia / no-logo</option>
             </select>
           </div>
           <div class="form-group">
@@ -82,7 +82,7 @@ const editId = Astro.url.searchParams.get('edit') || '';
             </select>
           </div>
           <div class="form-group">
-            <label>Visibilità digitale</label>
+            <label>VisibilitÃ  digitale</label>
             <select id="f-digital" onchange="calcScore()">
               <option value="2">Online + foto curate</option>
               <option value="1" selected>Solo negozio fisico</option>
@@ -113,28 +113,28 @@ const editId = Astro.url.searchParams.get('edit') || '';
         <div class="mono" style="font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)">Prezzi</div>
         <div class="form-grid">
           <div class="form-group">
-            <label>Costo acquisto (€)</label>
+            <label>Costo acquisto (â¬)</label>
             <input type="number" id="f-cost" min="0" step="0.5" oninput="calcScore()" placeholder="0.00">
           </div>
           <div class="form-group">
-            <label>Prezzo vendita finale (€)</label>
-            <input type="number" id="f-price" step="0.5" placeholder="Auto dal suggerito →">
+            <label>Prezzo vendita finale (â¬)</label>
+            <input type="number" id="f-price" step="0.5" placeholder="Auto dal suggerito â">
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);margin-top:1rem">
           <div style="padding:10px 14px;border-right:1px solid var(--border)">
             <div class="mono" style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">Costo acquisto</div>
-            <div class="mono" style="font-size:17px;font-weight:500" id="pp-cost">€ —</div>
+            <div class="mono" style="font-size:17px;font-weight:500" id="pp-cost">â¬ â</div>
           </div>
           <div style="padding:10px 14px;border-right:1px solid var(--border)">
             <div class="mono" style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">Riferimento mercato live</div>
-            <div class="mono accent" style="font-size:17px;font-weight:500" id="pp-market">€ —</div>
+            <div class="mono accent" style="font-size:17px;font-weight:500" id="pp-market">â¬ â</div>
             <div class="mono muted" style="font-size:9px;margin-top:2px" id="pp-market-src">premi "Cerca prezzi"</div>
           </div>
           <div style="padding:10px 14px">
             <div class="mono" style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px">Prezzo suggerito</div>
-            <div class="mono green" style="font-size:17px;font-weight:500" id="pp-suggest">€ —</div>
+            <div class="mono green" style="font-size:17px;font-weight:500" id="pp-suggest">â¬ â</div>
             <div class="mono muted" style="font-size:9px;margin-top:2px" id="pp-logic"></div>
           </div>
         </div>
@@ -143,9 +143,9 @@ const editId = Astro.url.searchParams.get('edit') || '';
         <div style="margin-top:1rem">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
             <button id="search-btn" onclick="searchPrices()" class="btn btn-primary" style="padding:8px 20px">
-              ▶ CERCA PREZZI LIVE
+              â¶ CERCA PREZZI LIVE
             </button>
-            <span class="mono muted" style="font-size:10px" id="search-status">Vinted · Depop · Vestiaire Collective</span>
+            <span class="mono muted" style="font-size:10px" id="search-status">Vinted Â· Depop Â· Vestiaire Collective</span>
           </div>
           <div style="border:1px solid var(--border);padding:12px;background:#faf8f4;min-height:52px;font-family:var(--font-mono);font-size:11px" id="market-box">
             <span class="muted">In attesa della ricerca...</span>
@@ -155,7 +155,7 @@ const editId = Astro.url.searchParams.get('edit') || '';
 
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:1rem">
         <a href="/inventario" class="btn">Annulla</a>
-        <button onclick="saveItem()" class="btn btn-primary" id="save-btn">Salva capo →</button>
+        <button onclick="saveItem()" class="btn btn-primary" id="save-btn">Salva capo â</button>
       </div>
     </div>
 
@@ -165,8 +165,8 @@ const editId = Astro.url.searchParams.get('edit') || '';
         <div class="mono" style="font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)">Score predittivo</div>
 
         <div style="text-align:center;padding:1rem 0 1.25rem">
-          <div class="mono muted" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Probabilità vendita 30gg</div>
-          <div class="mono" style="font-size:48px;font-weight:500;line-height:1" id="score-big">—</div>
+          <div class="mono muted" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">ProbabilitÃ  vendita 30gg</div>
+          <div class="mono" style="font-size:48px;font-weight:500;line-height:1" id="score-big">â</div>
           <div style="margin-top:8px" id="score-tier-badge"></div>
           <div class="mono muted" style="font-size:10px;margin-top:6px" id="score-days"></div>
         </div>
@@ -211,14 +211,14 @@ function getFormVals() {
 async function calcScore() {
   const v = getFormVals();
   if (v.cost) {
-    document.getElementById('pp-cost').textContent = '€ ' + v.cost.toFixed(2);
+    document.getElementById('pp-cost').textContent = 'â¬ ' + v.cost.toFixed(2);
     const byMarkup = v.cost * (MARKUP[v.cat] || 2.4);
     const ref = liveMarketPrice || 0;
     const suggested = Math.round(Math.max(byMarkup, ref > 0 ? ref * 0.9 : byMarkup) / 0.5) * 0.5;
-    document.getElementById('pp-suggest').textContent = '€ ' + suggested.toFixed(2);
+    document.getElementById('pp-suggest').textContent = 'â¬ ' + suggested.toFixed(2);
     document.getElementById('pp-logic').textContent = 'Markup ' + (MARKUP[v.cat]||2.4) + 'x';
     if (!document.getElementById('f-price').value)
-      document.getElementById('f-price').placeholder = 'Suggerito: €' + suggested.toFixed(2);
+      document.getElementById('f-price').placeholder = 'Suggerito: â¬' + suggested.toFixed(2);
   }
 
   try {
@@ -237,7 +237,7 @@ async function calcScore() {
 function renderScore(d) {
   if (!d) return;
   const tier = d.tier;
-  const tierLbl = {hot:'Rotazione rapida',good:'Buona probabilità',med:'Vendita lenta',slow:'Rischio invenduto'}[tier];
+  const tierLbl = {hot:'Rotazione rapida',good:'Buona probabilitÃ ',med:'Vendita lenta',slow:'Rischio invenduto'}[tier];
   const tierCol = {hot:'b-avail',good:'b-u',med:'b-a',slow:'b-s'}[tier];
 
   document.getElementById('score-big').textContent = d.score + '%';
@@ -258,7 +258,7 @@ function renderScore(d) {
   `).join('');
 
   // Insights
-  const icoMap = {pos:'▲',neg:'▽',neu:'◆'};
+  const icoMap = {pos:'â²',neg:'â½',neu:'â'};
   const colMap = {pos:'#1a5c3a',neg:'var(--accent)',neu:' var(--muted)'};
   const bgMap  = {pos:'#e8f5ed',neg:'#fde8e8',neu:'#f0ede6'};
   document.getElementById('insights-list').innerHTML = (d.insights||[]).map(i => `
@@ -277,7 +277,7 @@ async function searchPrices() {
   const box = document.getElementById('market-box');
 
   btn.disabled = true;
-  btn.textContent = '▶ RICERCA IN CORSO...';
+  btn.textContent = 'â¶ RICERCA IN CORSO...';
   status.innerHTML = '<span class="spinner"></span>';
   box.innerHTML = '<span class="muted">Interrogando Vinted, Depop, Vestiaire Collective...</span>';
 
@@ -303,34 +303,34 @@ async function searchPrices() {
     liveMarketPrice = data.avg || null;
     liveMarketText  = data.summary || '';
 
-    document.getElementById('pp-market').textContent = data.avg ? '€ ' + data.avg.toFixed(0) : '€ n.d.';
-    document.getElementById('pp-market-src').textContent = 'Confidenza: ' + (data.confidence||'—');
+    document.getElementById('pp-market').textContent = data.avg ? 'â¬ ' + data.avg.toFixed(0) : 'â¬ n.d.';
+    document.getElementById('pp-market-src').textContent = 'Confidenza: ' + (data.confidence||'â');
 
     const confColor = {alta:'var(--green)',media:'var(--accent)',bassa:'var(--muted)'}[data.confidence]||'var(--muted)';
     const srcRows = (data.sources||[]).map(s =>
       `<div style="display:flex;gap:12px;padding:3px 0;border-bottom:1px solid var(--border)">
         <span style="color:var(--accent);font-size:9px;min-width:70px;text-transform:uppercase">${s.platform}</span>
-        <span style="font-weight:500">€${s.price}</span>
+        <span style="font-weight:500">â¬${s.price}</span>
         <span class="muted" style="font-size:10px">${s.condition}</span>
       </div>`
     ).join('');
 
     box.innerHTML = `
-      <div class="muted" style="font-size:9px;margin-bottom:6px">Aggiornato: ${new Date().toLocaleTimeString('it-IT')} · <span style="color:${confColor}">Confidenza: ${data.confidence||'—'}</span></div>
+      <div class="muted" style="font-size:9px;margin-bottom:6px">Aggiornato: ${new Date().toLocaleTimeString('it-IT')} Â· <span style="color:${confColor}">Confidenza: ${data.confidence||'â'}</span></div>
       ${srcRows}
-      ${data.avg ? `<div style="margin-top:6px"><strong>Media: €${data.avg}</strong> (min €${data.min||'—'} / max €${data.max||'—'})</div>` : ''}
+      ${data.avg ? `<div style="margin-top:6px"><strong>Media: â¬${data.avg}</strong> (min â¬${data.min||'â'} / max â¬${data.max||'â'})</div>` : ''}
       <div class="muted" style="margin-top:4px;font-size:10px">${data.summary||''}</div>
     `;
 
     btn.disabled = false;
-    btn.textContent = '▷ AGGIORNA PREZZI';
+    btn.textContent = 'â· AGGIORNA PREZZI';
     status.textContent = 'Ultimo aggiornamento: ' + new Date().toLocaleTimeString('it-IT');
     calcScore();
 
   } catch(e) {
     box.innerHTML = `<span style="color:var(--accent)">Errore: ${e.message}</span>`;
     btn.disabled = false;
-    btn.textContent = '▶ RIPROVA';
+    btn.textContent = 'â¶ RIPROVA';
     status.textContent = '';
   }
 }
@@ -374,7 +374,7 @@ async function saveItem() {
   } catch(e) {
     alert('Errore: ' + e.message);
     btn.disabled = false;
-    btn.textContent = 'Salva capo →';
+    btn.textContent = 'Salva capo â';
   }
 }
 
@@ -395,7 +395,7 @@ async function loadEditData() {
     document.getElementById('f-decade').value   = it['Decade'] || '90s';
     document.getElementById('f-brand-tier').value = it['Brand Tier'] || 2;
     document.getElementById('f-season').value   = it['Stagione'] || 'match';
-    document.getElementById('f-digital').value  = it['Visibilità Digitale'] || 1;
+    document.getElementById('f-digital').value  = it['VisibilitÃ  Digitale'] || 1;
     document.getElementById('f-cannibal').value = it['Cannibalizzazione'] || 0;
     document.getElementById('f-cost').value     = it['Costo Acquisto'] || '';
     document.getElementById('f-price').value    = it['Prezzo Vendita'] || '';
@@ -403,12 +403,17 @@ async function loadEditData() {
     document.getElementById('f-notes').value    = it['Note'] || '';
     liveMarketPrice = it['Prezzo Mercato Live'] || null;
     if (liveMarketPrice) {
-      document.getElementById('pp-market').textContent = '€ ' + liveMarketPrice.toFixed(0);
-      document.getElementById('pp-market-src').textContent = 'salvato · aggiorna se vuoi';
+      document.getElementById('pp-market').textContent = 'â¬ ' + liveMarketPrice.toFixed(0);
+      document.getElementById('pp-market-src').textContent = 'salvato Â· aggiorna se vuoi';
     }
     calcScore();
   } catch(e) { console.error(e); }
 }
+
+// Esponi funzioni al global scope per gli onclick inline
+window.calcScore = calcScore;
+window.searchPrices = searchPrices;
+window.saveItem = saveItem;
 
 loadEditData();
 calcScore();
